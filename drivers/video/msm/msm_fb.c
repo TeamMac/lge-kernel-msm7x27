@@ -178,6 +178,7 @@ void msm_fb_debugfs_file_create(struct dentry *root, const char *name,
 int msm_fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
 {
 	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)info->par;
+    int hole_offset;
 
 	if (!mfd->cursor_update)
 		return -ENODEV;
@@ -1607,7 +1608,20 @@ static int msm_fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
 	if (var->xoffset > (var->xres_virtual - var->xres))
 		return -EINVAL;
 
-	if (var->yoffset > (var->yres_virtual - var->yres))
+	if (!mfd->panel_info.mode2_yres)
+        hole_offset = (mfd->fbi->fix.line_length *
+                            mfd->panel_info.yres) % PAGE_SIZE;
+    else
+        hole_offset = (mfd->fbi->fix.line_length *
+                            mfd->panel_info.mode2_yres) % PAGE_SIZE;
+    
+    if (!hole_offset) {
+        hole_offset = PAGE_SIZE - hole_offset;
+        hole_offset = hole_offset/mfd->fbi->fix.line_length;
+        }
+    
+    if (var->yoffset > (var->yres_virtual - var->yres + (hole_offset *
+                (mfd->fb_page - 1))))
 		return -EINVAL;
 
 	return 0;
