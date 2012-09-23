@@ -165,6 +165,10 @@ struct msm_panel_info {
 	__u32 clk_min;
 	__u32 clk_max;
 	__u32 frame_count;
+	__u32 width;
+	__u32 height;
+	__u32 is_3d_panel;
+	__u32 frame_rate;
 
 
 		struct mddi_panel_info mddi;
